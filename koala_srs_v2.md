@@ -4,13 +4,14 @@ Academic Roadmap, Notes & Progress Tracker
 
 **Software Requirements Specification (SRS)**
 
-Version 2.1
+Version 2.2
 
 July 2026
 
-| **Document Status** | Updated — GPA Calculator Added (v2.1) |
+| **Document Status** | Updated — Freemium/Pro Model Added (v2.2) |
 | --- | --- |
-| **Tech Stack** | Web: HTML/CSS/JS + Flask + PostgreSQL + REST API. Mobile: Native/cross-platform client consuming the same REST API. AI: LLM API (BYO key) for document extraction |
+| **Tech Stack** | Web: HTML/CSS/JS + Flask + PostgreSQL + REST API. Mobile: Native/cross-platform client consuming the same REST API. AI: Platform-managed LLM API keys; inference cost covered by subscription revenue |
+| **Pricing Model** | Free tier (roadmap extraction, limited uploads) + Pro tier (AI topic extraction from notes/slides, higher limits) |
 | **Target User** | Undergraduate / Postgraduate Students |
 | **Prepared By** | Development Team |
 
@@ -49,22 +50,26 @@ An Obsidian-style personal note-taking layer sits on top of both, so that notes,
 
 ## **1.5 Scope**
 
-In scope for v2.0:
+In scope for v2.2:
 
-- Multi-document upload per course (syllabus, CLO sheet, instructor notes/slides, academic calendar)
-- AI-assisted extraction of a semester roadmap (assessments, deadlines, weights, topics) with placeholder states
-- AI-assisted extraction of a topic list from instructor notes/slides, with student-managed completion checkboxes
-- Confirm-and-edit step before any extracted data is treated as authoritative
-- Personal note-taking system with markdown, bi-directional linking, backlinks, and a graph view
-- Self-assessment logging (confidence, quality, hours, mood, reflection) attached to roadmap nodes
-- Goal setting and tracking per semester
-- **GPA Calculator**: per-course grade tracking with credit hours, semester GPA, cumulative CGPA calculation, what-if scenario modelling, and integration with GPA-linked goals
-- Academic profile, insights, and semester retrospective
-- Streak system tied to meaningful engagement
-- Web application (primary for setup, extraction review, notes, retrospectives, GPA management) and mobile application (primary for daily logging, quick capture, topic check-offs, notifications)
-- Cross-platform sync between web and mobile
+- **Free Tier**
+  - Account creation and full course management (CRUD)
+  - Document upload per course with enforced limits (see FR-00-05): syllabus and CLO files accepted
+  - AI-assisted semester roadmap extraction from uploaded syllabus/CLO — powered by the platform's API key, no user key required
+  - Confirm-and-edit step before any extracted data is treated as authoritative
+  - Full manual roadmap/topic creation (no AI required)
+  - Personal note-taking, bi-directional linking, backlinks, and graph view
+  - Self-assessment logging, goal tracking, streaks, GPA calculator, profile, and retrospective
 
-Out of scope for v2.0: LMS integration (direct API pull from Moodle/Canvas/Blackboard), real-time multi-user collaboration on notes, automated grading, offline-first full-feature parity on mobile (only quick-capture works offline), notifications beyond streak/placeholder nudges.
+- **Pro Tier** (paid subscription)
+  - Everything in Free, plus:
+  - AI-assisted topic extraction from instructor notes/slides (PDF and PPT/PPTX) — the computationally heavier, per-file LLM call
+  - Higher document upload limits (see FR-00-05)
+  - Multi-document merge (syllabus + academic calendar) with RAG-based reconciliation
+  - **GPA Calculator**: per-course grade tracking with credit hours, semester GPA, cumulative CGPA calculation, what-if scenario modelling, and integration with GPA-linked goals (available on both tiers)
+  - Priority processing queue for extraction jobs
+
+Out of scope for v2.2: LMS integration, real-time multi-user collaboration, automated grading, offline-first full-feature parity on mobile, notifications beyond streak/placeholder nudges, BYO API key support.
 
 ## **1.6 Definitions and Acronyms**
 
@@ -76,7 +81,9 @@ Out of scope for v2.0: LMS integration (direct API pull from Moodle/Canvas/Black
 | CLO | Course Learning Outcomes — a document listing what a course is meant to teach |
 | RAG | Retrieval-Augmented Generation — retrieving relevant text from documents before generating a structured answer; used when combining multiple/long source documents |
 | LLM | Large Language Model — used for document extraction |
-| BYO API Key | "Bring Your Own" — the student supplies their own AI provider API key rather than the app absorbing inference cost |
+| Free Tier | The default account plan; includes roadmap extraction from syllabus with upload limits; no payment required |
+| Pro Tier | The paid subscription plan; unlocks AI topic extraction from notes/slides and higher upload limits |
+| Platform API Key | The LLM API key owned and managed by AcadTrack; shared across all users; its cost is recovered through Pro subscriptions |
 | Roadmap Node | A single extracted or manually created item on a course roadmap — an assignment, quiz, exam, project, or lab |
 | Placeholder Node | A roadmap node whose details (date, weight, topic) are not yet known and must be filled in later |
 | Topic | A single unit of course content extracted from instructor notes/slides, tracked as done/not-done |
@@ -85,6 +92,7 @@ Out of scope for v2.0: LMS integration (direct API pull from Moodle/Canvas/Black
 | Note Graph | The bi-directional link structure connecting personal notes, roadmap nodes, and topics |
 | Academic Profile | An auto-generated summary of patterns derived from a student's historical data |
 | Retrospective | An end-of-semester summary report generated from all logged data |
+| Upload Limit | The maximum number of documents a user may upload per course or per semester, enforced by their subscription tier |
 | GPA | Grade Point Average — weighted average of grade points across courses in a semester |
 | CGPA | Cumulative GPA — weighted average of grade points across all semesters |
 | Grade Point | Numeric value assigned to a letter grade on a scale (4.0, 5.0, or 10-point) |
@@ -97,20 +105,22 @@ Out of scope for v2.0: LMS integration (direct API pull from Moodle/Canvas/Black
 
 ## **2.1 System Architecture**
 
-AcadTrack v2.0 follows a three-tier architecture with an added AI extraction service and two client types:
+AcadTrack v2.2 follows a three-tier architecture with an added AI extraction service, subscription gating, and two client types:
 
-- **Web Frontend**: HTML, CSS, and JavaScript, communicating with the backend via REST API. Owns document upload, extraction review/confirmation, the notes graph view, and retrospectives.
+- **Web Frontend**: HTML, CSS, and JavaScript, communicating with the backend via REST API. Owns document upload, extraction review/confirmation, the notes graph view, retrospectives, and subscription/billing management.
 - **Mobile Frontend**: Consumes the same REST API. Owns daily logging, topic check-offs, quick note capture, self-assessment prompts, and push notifications.
-- **Backend**: Python/Flask exposing a RESTful API. Handles authentication, business logic, the extraction pipeline orchestration, and database access via SQLAlchemy ORM.
-- **AI Extraction Service**: A backend module that sends uploaded document text to an LLM API (student's own key) to produce structured roadmap and topic data. Uses a single structured-output call for a single document, and a lightweight retrieval step when combining multiple documents (e.g. several syllabi plus an academic calendar) into one semester roadmap.
-- **Database**: PostgreSQL. Stores all user data, courses, documents, roadmap nodes, topics, notes, links, logs, goals, and streaks.
+- **Backend**: Python/Flask exposing a RESTful API. Handles authentication, subscription tier enforcement, business logic, the extraction pipeline orchestration, and database access via SQLAlchemy ORM.
+- **AI Extraction Service**: A backend module that calls the **platform-managed LLM API key** to produce structured roadmap and topic data. Free tier: roadmap extraction from syllabus only (rate-limited). Pro tier: topic extraction from notes/slides + multi-document RAG merge. The platform absorbs inference cost; Pro subscription revenue covers it.
+- **Subscription & Billing**: A lightweight billing layer (e.g. Stripe or LemonSqueezy) that records the user's current plan and enforces tier gates on API routes.
+- **Database**: PostgreSQL. Stores all user data, courses, documents, roadmap nodes, topics, notes, links, logs, goals, streaks, and subscription records.
 
 ## **2.2 User Roles**
 
 | **Role** | **Description** |
 | --- | --- |
-| Student (Primary User) | Uploads documents, reviews/confirms extracted roadmaps and topics, logs progress and notes, views their own profile and retrospectives. Cannot access other users' data. |
-| Admin (Future Scope) | Manages accounts, views aggregate anonymised platform statistics. Not implemented in v2.0. |
+| Free User | Uploads syllabi (within limit), gets AI roadmap extraction, uses all non-AI features. Cannot access topic extraction or multi-doc merge. |
+| Pro User | All Free features plus AI topic extraction from notes/slides, higher upload limits, and priority extraction queue. |
+| Admin (Future Scope) | Manages accounts, monitors AI cost dashboards, views aggregate anonymised platform statistics. Not implemented in v2.0. |
 
 ## **2.3 Platform Responsibility Split**
 
@@ -127,19 +137,36 @@ AcadTrack v2.0 follows a three-tier architecture with an added AI extraction ser
 
 ## **2.4 High-Level User Journey**
 
-1. Student registers and creates a semester with its courses.
-2. Student uploads a syllabus and/or CLO file per course (web-first).
-3. AI extraction produces a draft roadmap (assessments, dates, weights) and, once instructor notes/slides are uploaded, a draft topic list — both containing placeholders wherever data is missing.
-4. Student reviews, edits, and confirms the extracted roadmap and topics before they go live.
-5. Through the semester (mobile-first): student fills in placeholders as details are announced, checks off topics as they're covered in class, logs confidence/effort/reflection at each roadmap node, and captures quick notes.
-6. Student writes and links fuller notes on web, anchored to roadmap nodes and topics; backlinks and the graph view surface connections across courses.
-7. Dashboard surfaces real-time insight — overdue items, topic coverage per course, confidence trends, streaks.
-8. At semester end, student generates a Retrospective Report combining performance, planning accuracy, topic coverage, and note-density-vs-outcome patterns.
-9. Profile page reflects cumulative patterns across all semesters.
+1. Student registers (Free tier by default) and creates a semester with its courses.
+2. **[Free]** Student uploads a syllabus and/or CLO file per course — upload count enforced against their tier limit.
+3. **[Free]** AI extracts a draft roadmap (assessments, dates, weights) from the syllabus using the platform API key — no user key needed.
+4. Student reviews, edits, and confirms the extracted roadmap before it goes live.
+5. **[Pro only]** Student uploads instructor notes/slides; AI extracts a topic checklist per course.
+6. **[Free — manual fallback]** Free-tier users can still create topics manually without AI extraction.
+7. Through the semester (mobile-first): student fills in placeholders, checks off topics, logs confidence/effort/reflection, and captures quick notes.
+8. Student writes and links fuller notes on web; backlinks and the graph view surface connections.
+9. Dashboard surfaces real-time insight — overdue items, topic coverage, confidence trends, streaks.
+10. At semester end, student generates a Retrospective Report.
+11. Profile page reflects cumulative patterns across all semesters.
+12. Free users see a contextual upgrade prompt when they hit a limit or attempt a Pro-only action.
 
 # **3. Functional Requirements**
 
 Each requirement is tagged with a unique ID, priority (Must Have / Should Have / Nice to Have), and rationale.
+
+## **FR-00: Subscription & Tier Management**
+
+| **ID** | **Priority** | **Requirement** | **Rationale** |
+| --- | --- | --- | --- |
+| FR-00-01 | Must Have | Every new account is provisioned on the Free tier automatically | No friction to start |
+| FR-00-02 | Must Have | System records each user's current plan (free / pro) and plan expiry date in the database | Gate enforcement requires a reliable source of truth |
+| FR-00-03 | Must Have | Backend enforces tier gates on all Pro-only routes — a Free user calling a Pro route receives a clear `403 Upgrade Required` response | Prevents abuse and drives upgrade conversion |
+| FR-00-04 | Must Have | UI displays the user's current plan and remaining upload quota on the profile/settings page | Transparency |
+| FR-00-05 | Must Have | Upload limits are enforced per user per semester: **Free tier — 3 documents total per course** (syllabus-type only); **Pro tier — 20 documents per course** (all types) | Controls platform AI inference cost |
+| FR-00-06 | Must Have | When a Free user reaches their upload limit, the system blocks further uploads and shows a clear upgrade prompt — it does not silently discard the file | Good UX; never lose user data |
+| FR-00-07 | Should Have | Payment and plan upgrade flow is handled via an external billing provider (Stripe or LemonSqueezy); the backend only records the resulting plan status via webhook | Keeps billing logic out of core app |
+| FR-00-08 | Should Have | Pro subscription can be cancelled; on cancellation, the user reverts to Free tier at the end of the billing period — previously extracted Pro data (topics, etc.) remains visible but no new Pro-only extractions are permitted | Graceful downgrade |
+| FR-00-09 | Nice to Have | Admin dashboard shows: total users, free vs pro ratio, AI token cost per day, upload volume per tier | Operational cost visibility |
 
 ## **FR-01: User Authentication & Account Management**
 
@@ -151,8 +178,7 @@ Each requirement is tagged with a unique ID, priority (Must Have / Should Have /
 | FR-01-04 | Must Have | JWT validated on all protected routes | Prevent unauthorised access |
 | FR-01-05 | Must Have | User can log out on either client independently | Session management |
 | FR-01-06 | Should Have | User can update profile (name, institution, semester) | Personalisation |
-| FR-01-07 | Should Have | User can store their own AI provider API key securely | Enables BYO-key extraction model |
-| FR-01-08 | Nice to Have | Password reset via email | User convenience |
+| FR-01-07 | Nice to Have | Password reset via email | User convenience |
 
 ## **FR-02: Course Management**
 
@@ -164,32 +190,38 @@ Each requirement is tagged with a unique ID, priority (Must Have / Should Have /
 | FR-02-04 | Should Have | User can archive a course at semester end | Historical record and profile building |
 | FR-02-05 | Should Have | User can view archived (past semester) courses | Long-term profile continuity |
 
-## **FR-03: Document Upload & Roadmap Extraction**
+## **FR-03: Document Upload & Roadmap Extraction** *(Free + Pro)*
 
-The core differentiating feature of v2.0. Replaces manual assignment creation as the primary onboarding path.
+The core differentiating feature of v2.2. Available on the **Free tier**; roadmap extraction from syllabus is included at no cost. Upload counts are enforced against tier limits (FR-00-05).
 
-| **ID** | **Priority** | **Requirement** | **Rationale** |
-| --- | --- | --- | --- |
-| FR-03-01 | Must Have | User can upload one or more documents per course (syllabus, CLO sheet, academic calendar) in PDF format | Core input for extraction |
-| FR-03-02 | Must Have | System extracts a draft roadmap per course: assessment title, type, date, weight percentage, where determinable | Removes manual data-entry friction |
-| FR-03-03 | Must Have | Any field the source document does not specify is created as an explicit placeholder, not silently omitted | Matches the reality that syllabi are incomplete on day one |
-| FR-03-04 | Must Have | Extracted roadmap is shown to the student for review before being marked confirmed | Prevents silent extraction errors from being treated as fact |
-| FR-03-05 | Must Have | Student can edit any extracted field, add missing nodes, or delete incorrect ones during review | Trust and correctness |
-| FR-03-06 | Should Have | System can re-process an updated/revised syllabus and merge changes into the existing roadmap without duplicating confirmed nodes | Supports mid-semester syllabus revisions |
-| FR-03-07 | Should Have | System combines multiple documents (e.g. syllabus + institution academic calendar) into one coherent per-course roadmap | Reduces manual reconciliation across sources |
-| FR-03-08 | Should Have | Extraction pipeline surfaces a confidence indicator per extracted field | Helps the student know what to double-check |
-| FR-03-09 | Nice to Have | User can manually add a roadmap node without any source document, for courses without a formal syllabus | Flexibility for edge cases |
+| **ID** | **Priority** | **Tier** | **Requirement** | **Rationale** |
+| --- | --- | --- | --- | --- |
+| FR-03-01 | Must Have | Free | User can upload syllabus and CLO files per course in PDF format, up to the tier upload limit | Core input for extraction |
+| FR-03-02 | Must Have | Free | System extracts a draft roadmap per course using the platform API key: assessment title, type, date, weight percentage, where determinable | Removes manual data-entry friction; no user key required |
+| FR-03-03 | Must Have | Free | Any field the source document does not specify is created as an explicit placeholder, not silently omitted | Matches the reality that syllabi are incomplete on day one |
+| FR-03-04 | Must Have | Free | Extracted roadmap is shown to the student for review before being marked confirmed | Prevents silent extraction errors from being treated as fact |
+| FR-03-05 | Must Have | Free | Student can edit any extracted field, add missing nodes, or delete incorrect ones during review | Trust and correctness |
+| FR-03-06 | Must Have | Free | If user has reached their upload limit, the upload endpoint rejects the file with a `403` and an upgrade prompt — no file is stored | FR-00-06 enforcement |
+| FR-03-07 | Should Have | Pro | System can re-process an updated/revised syllabus and merge changes into the existing roadmap without duplicating confirmed nodes | Supports mid-semester revisions |
+| FR-03-08 | Should Have | Pro | System combines multiple documents (syllabus + academic calendar) into one coherent roadmap via RAG | Reduces manual reconciliation; heavier inference cost justifies Pro gate |
+| FR-03-09 | Should Have | Free | Extraction pipeline surfaces a confidence indicator per extracted field | Helps the student know what to double-check |
+| FR-03-10 | Nice to Have | Free | User can manually add a roadmap node without any source document | Flexibility for courses without a formal syllabus |
 
-## **FR-04: Course Notes Material Upload & Topic Extraction**
+## **FR-04: Course Notes Material Upload & Topic Extraction** *(Pro only for AI; Free for manual)*
 
-| **ID** | **Priority** | **Requirement** | **Rationale** |
-| --- | --- | --- | --- |
-| FR-04-01 | Must Have | User can upload instructor-provided notes/slides (PDF or PPT/PPTX) per course | Source material for topic extraction |
-| FR-04-02 | Must Have | System extracts a topic list from uploaded materials (one topic per distinct concept/lecture section) | Gives students a concrete, ordered picture of course content |
-| FR-04-03 | Must Have | Each extracted topic is linked back to its source document | Traceability — student can reopen the original slide if needed |
-| FR-04-04 | Must Have | Student can review, edit, reorder, merge, or delete extracted topics before confirming the list | Extraction won't always segment topics the way the course actually does |
-| FR-04-05 | Should Have | System appends newly extracted topics to the existing list when additional materials are uploaded later in the semester | Matches the fact that materials are typically uploaded week by week |
-| FR-04-06 | Should Have | Topics can optionally be linked to a specific roadmap node (e.g. "these 4 topics are covered by Midterm 1") | Connects coverage to assessments, not just a flat list |
+> [!IMPORTANT]
+> AI-powered topic extraction from notes/slides is a **Pro-only** feature. Free-tier users can still create topics manually. The upload of notes/slides files counts against the per-course upload limit (FR-00-05).
+
+| **ID** | **Priority** | **Tier** | **Requirement** | **Rationale** |
+| --- | --- | --- | --- | --- |
+| FR-04-01 | Must Have | Pro | Pro user can upload instructor-provided notes/slides (PDF or PPT/PPTX) per course, counted against their higher upload limit | Source material for AI topic extraction |
+| FR-04-02 | Must Have | Free | Free user can manually create topics (title, order) without any document upload or AI call | Full usability without a subscription; manual fallback always works |
+| FR-04-03 | Must Have | Pro | System extracts a topic list from uploaded materials using the platform API key (one topic per distinct concept/lecture section) | Gives Pro students an automatic course content picture |
+| FR-04-04 | Must Have | Pro | Each AI-extracted topic is linked back to its source document | Traceability |
+| FR-04-05 | Must Have | Free+Pro | Student can review, edit, reorder, merge, or delete topics (whether AI-extracted or manually created) before confirming the list | Extraction and manual entry both need correction capability |
+| FR-04-06 | Should Have | Pro | System appends newly extracted topics when additional materials are uploaded later in the semester | Materials arrive week by week |
+| FR-04-07 | Should Have | Free+Pro | Topics can optionally be linked to a specific roadmap node | Connects coverage to assessments |
+| FR-04-08 | Must Have | Free | When a Free user attempts to trigger AI topic extraction, the system returns a `403 Upgrade Required` with a contextual upgrade prompt | Gate enforcement with clear messaging |
 
 ## **FR-05: Topic Progress Tracking**
 
@@ -697,11 +729,34 @@ Base URL: `/api/v1` — all protected endpoints require `Authorization: Bearer <
 
 No extracted field — roadmap node or topic — is treated as authoritative until the student has reviewed it. Every extracted item is shown in one of three states: **Confirmed**, **Needs Review** (default state on first extraction), or **Placeholder** (field intentionally left blank because the source document didn't specify it). This step exists because syllabus formats are inconsistent (tables, prose, scanned/OCR'd PDFs) and extraction will sometimes misread a date or weight — the app must never let a wrong auto-extracted deadline masquerade as a real one.
 
-## **7.3 Cost & Privacy Model**
+## **7.3 Cost, Privacy & Tier Model**
 
-- Students supply their own AI provider API key (BYO key), stored encrypted, since a zero-budget student project cannot absorb per-user inference cost.
-- Uploaded documents may contain instructor names and institution-specific policy text; this data handling should be disclosed clearly to the student before the first upload.
-- Extraction failures must fall back to an empty, manually-editable roadmap/topic list rather than blocking onboarding entirely.
+### Platform API Key Architecture
+- **AcadTrack manages a single LLM API key** (recommended: Gemini API for cost-efficiency). All extraction calls are made server-side using this key — users never see, provide, or manage any AI credentials.
+- **Free tier inference cost** is subsidised by the platform. Roadmap extraction from a typical syllabus costs ~$0.001–$0.003 per call (Gemini Flash pricing). With upload limits of 3 docs/course, worst-case cost per free user per semester is very small (~$0.01–0.03).
+- **Pro tier inference cost** covers heavier topic extraction from slides/notes (more tokens, more calls). Pro subscription revenue is designed to cover this: even at $3–5/mo per Pro user with ~10 extraction calls/semester, the margin is comfortable.
+
+### Tier Enforcement
+| Action | Free | Pro |
+| --- | --- | --- |
+| Syllabus/CLO upload | ✅ Up to 3/course | ✅ Up to 20/course |
+| Notes/slides upload | ❌ Blocked | ✅ Up to 20/course |
+| Roadmap extraction (AI) | ✅ Included | ✅ Included |
+| Topic extraction (AI) | ❌ `403 Upgrade Required` | ✅ Included |
+| Multi-doc RAG merge | ❌ Blocked | ✅ Included |
+| Manual topic creation | ✅ Unlimited | ✅ Unlimited |
+| All non-AI features | ✅ Full access | ✅ Full access |
+
+### Privacy
+- Uploaded documents may contain instructor names and institution-specific policy text. This is disclosed clearly before the first upload.
+- Documents are stored per-user and never shared across accounts or used to train models.
+- Extraction failures fall back to an empty, manually-editable roadmap/topic list — onboarding is never blocked by an AI error.
+
+### AI Cost Control Mechanisms
+- **Rate limiting**: Free tier capped at 3 extraction calls per course per semester (enforced by upload limit).
+- **File size limit**: Maximum 10 MB per uploaded file for Free; 25 MB for Pro — prevents runaway token usage.
+- **Async queue**: All extraction jobs run asynchronously. A per-user concurrency limit (1 active job for Free, 3 for Pro) prevents abuse.
+- **Token budget**: Extraction prompts are structured to request only the needed JSON schema, keeping token counts predictable.
 
 # **8. Recommended Project Structure**
 
@@ -783,9 +838,10 @@ acadtrack-mobile/
 
 ## **10.1 Assumptions**
 
-- A single developer (student) is building this project.
-- Application runs locally or on small free-tier deployments.
-- Students are willing to supply their own AI API key in exchange for the extraction feature.
+- A single developer is building this project initially.
+- Application runs on free/low-cost hosting tiers at launch (~50 users).
+- Free-tier inference cost (roadmap extraction) is low enough (~$0.01–0.03/user/semester) to absorb with zero initial revenue.
+- A meaningful fraction of active users (target: 10–15%) will convert to Pro within 6 months.
 - Data volume per user will not exceed roughly 1,000 roadmap nodes/notes combined.
 
 ## **10.2 Risks**
@@ -793,7 +849,9 @@ acadtrack-mobile/
 | **Risk** | **Likelihood** | **Mitigation** |
 | --- | --- | --- |
 | Extraction accuracy varies widely across syllabus formats | High | Mandatory confirm-before-lock step; never auto-apply unreviewed data; manual-entry fallback always available |
-| Students decline to provide an AI API key | Medium | Manual course/roadmap creation must remain fully functional without any AI feature |
+| Free-tier AI cost exceeds revenue at early scale | Medium | Upload limits cap worst-case spend; monitor cost dashboard (FR-00-09); can tighten limits without code changes |
+| Low Pro conversion rate makes AI cost unsustainable | Medium | Keep Free tier genuinely useful (full manual mode + roadmap AI); position Pro on the high-value pain point (topic extraction = most time-saving feature) |
+| LLM API pricing changes (platform key model) | Low-Medium | Abstract the LLM provider behind an adapter; can switch providers or tighten token budgets without changing product behaviour |
 | Uploaded instructor materials raise copyright/privacy questions | Medium | Store per-user only, never shared or used to train models, disclosed clearly in privacy notice |
 | Mobile/web sync conflicts (edits on both while offline) | Medium | Last-write-wins with a visible conflict flag on notes; keep mobile edits scoped to append-mostly actions |
 | Scope creep across two clients and an AI pipeline | High | Strictly sequence phases; mobile v1 ships with a deliberately reduced feature set (see 2.3) |
@@ -802,8 +860,10 @@ acadtrack-mobile/
 ## **10.3 Constraints**
 
 - Backend/web tech stack: HTML/CSS/JS, Python/Flask, PostgreSQL, REST API.
-- AI extraction relies on student-supplied API keys — no inference cost absorbed by the app itself in v2.0.
-- Budget: zero — only free-tier tools and services.
+- AI extraction uses a **platform-managed API key**; BYO key support is explicitly out of scope.
+- Upload limits (3 docs/course Free, 20 docs/course Pro) are a hard constraint driven by AI cost control — not a soft suggestion.
+- Billing provider (Stripe or LemonSqueezy) must support webhook-based plan updates; the app never processes payment card data directly.
+- Budget at launch: near-zero infra cost; Pro revenue covers AI inference as the user base grows.
 
 # **11. Glossary**
 
@@ -816,7 +876,10 @@ acadtrack-mobile/
 | Topic Coverage | The proportion of a course's topics marked complete at a given point in the semester. |
 | Note Graph | The bi-directional link structure connecting personal notes, roadmap nodes, and topics, viewable as a network graph. |
 | Note-Density Correlation | A profile insight comparing how much a student wrote/linked notes on a topic or node against their self-rated quality or grade for it. |
-| BYO API Key | The model where the student supplies their own AI provider key rather than the app paying for inference. |
+| Free Tier | Default account plan: roadmap extraction from syllabus included; up to 3 doc uploads per course per semester; no payment needed. |
+| Pro Tier | Paid subscription plan: adds AI topic extraction from notes/slides, up to 20 doc uploads per course, priority queue. |
+| Platform API Key | The LLM API key owned and managed by AcadTrack used for all extraction calls; its cost is recovered via Pro subscriptions. |
+| Upload Limit | Max documents a user may upload per course per semester, enforced by their plan tier (3 = Free, 20 = Pro). |
 | Confidence Gap | The difference between confidence rated at node creation and quality self-rated at submission. |
 | Hours Gap | The difference between estimated and actual hours logged on a roadmap node. |
 | Procrastination Fingerprint | A computed metric showing how far before or after a deadline a student typically submits work. |
@@ -831,6 +894,6 @@ acadtrack-mobile/
 | GPA Goal | A goal (FR-08 type) flagged with a target GPA value, displayed with a live tracking status in the GPA Calculator. |
 | Standalone Calculator | A GPA calculator mode operating entirely on user-typed inputs with no link to any AcadTrack course or semester; results are never persisted. |
 
-_AcadTrack SRS v2.0 — End of Document_
+_AcadTrack SRS v2.2 — End of Document_
 
-_This document supersedes v1.0 and should be reviewed at the start of each development phase._
+_This document supersedes v2.1 (GPA Calculator) and v2.0. It should be reviewed at the start of each development phase._
