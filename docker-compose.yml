@@ -1,0 +1,20 @@
+# Local development database (fallback if Supabase DB not configured)
+# Usage: docker compose up -d
+# Then set DATABASE_URL=postgresql+asyncpg://koala:koala@localhost:5432/koala
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: koala-db
+    environment:
+      POSTGRES_USER: koala
+      POSTGRES_PASSWORD: koala
+      POSTGRES_DB: koala
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

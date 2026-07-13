@@ -1,0 +1,39 @@
+# ========================
+# Core
+# ========================
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+pydantic==2.11.3
+pydantic-settings==2.9.1
+
+# ========================
+# Database
+# ========================
+sqlalchemy[asyncio]==2.0.41
+psycopg==3.2.4
+alembic==1.16.2
+greenlet==3.2.3
+
+# ========================
+# Auth
+# ========================
+python-jose[cryptography]==3.4.0
+httpx==0.28.1
+
+# ========================
+# Billing (LemonSqueezy webhook verification)
+# ========================
+# Uses stdlib hmac — no extra dep needed
+
+# ========================
+# Utilities
+# ========================
+python-dotenv==1.1.0
+python-multipart==0.0.20
+
+# ========================
+# Testing
+# ========================
+pytest==8.4.1
+pytest-asyncio==1.0.0
+ruff==0.11.12
