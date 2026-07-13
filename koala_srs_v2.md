@@ -1,4 +1,4 @@
-**AcadTrack**
+**Koala**
 
 Academic Roadmap, Notes & Progress Tracker
 
