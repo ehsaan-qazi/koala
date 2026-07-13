@@ -21,15 +21,15 @@ July 2026
 
 ## **1.1 Purpose**
 
-This Software Requirements Specification (SRS) defines the complete functional and non-functional requirements for AcadTrack v2.0 — a pivot from a manual academic self-tracking tool to an AI-assisted academic roadmap, note-taking, and progress-reflection application. This document supersedes AcadTrack SRS v1.0 and is the single source of truth for all development decisions going forward.
+This Software Requirements Specification (SRS) defines the complete functional and non-functional requirements for Koala v2.0 — a pivot from a manual academic self-tracking tool to an AI-assisted academic roadmap, note-taking, and progress-reflection application. This document supersedes Koala SRS v1.0 and is the single source of truth for all development decisions going forward.
 
 ## **1.2 Vision Statement**
 
-Students start every semester with the same stack of syllabi and end it with nothing but a transcript of grades — no record of the effort, confusion, or growth in between. AcadTrack closes that gap: it reads the documents a student already has, turns them into a living roadmap of the semester that fills itself in as the term unfolds, and lets every note, reflection, and self-assessment attach directly to the moment it belongs to. The result isn't another to-do list or another notes app — it's a single, evolving picture of how a student actually learns, so that by the end of a semester they understand not just what grade they got, but why.
+Students start every semester with the same stack of syllabi and end it with nothing but a transcript of grades — no record of the effort, confusion, or growth in between. Koala closes that gap: it reads the documents a student already has, turns them into a living roadmap of the semester that fills itself in as the term unfolds, and lets every note, reflection, and self-assessment attach directly to the moment it belongs to. The result isn't another to-do list or another notes app — it's a single, evolving picture of how a student actually learns, so that by the end of a semester they understand not just what grade they got, but why.
 
 ## **1.3 Project Overview**
 
-AcadTrack v2.0 ingests a student's own course documents — syllabi, Course Learning Outcome (CLO) sheets, and instructor-provided notes/slides — and uses an AI extraction pipeline to build two things automatically:
+Koala v2.0 ingests a student's own course documents — syllabi, Course Learning Outcome (CLO) sheets, and instructor-provided notes/slides — and uses an AI extraction pipeline to build two things automatically:
 
 1. A **semester roadmap** per course: assessments, deadlines, weights, and topics, with explicit placeholders for anything not yet announced, which the student progressively fills in and confirms.
 2. A **topic checklist** per course: the list of topics actually covered in class, extracted from uploaded lecture notes/slides, which the student checks off as they complete each one — giving a running "X of Y topics done" view per course.
@@ -38,7 +38,7 @@ An Obsidian-style personal note-taking layer sits on top of both, so that notes,
 
 ## **1.4 Problem Statement**
 
-| **Pain Point** | **Why existing tools (including AcadTrack v1.0) fail here** |
+| **Pain Point** | **Why existing tools (including Koala v1.0) fail here** |
 | --- | --- |
 | Cold-start setup fatigue | Manually re-creating every course, deadline, and weight from a syllabus PDF is grunt work on top of actual coursework — most students abandon the tool before it collects enough data to be useful. |
 | Syllabi are incomplete on day one | Exam dates, rubrics, and topics are often announced mid-semester via email or LMS post, not in the original PDF. A one-time static import goes stale within weeks. |
@@ -83,7 +83,7 @@ Out of scope for v2.2: LMS integration, real-time multi-user collaboration, auto
 | LLM | Large Language Model — used for document extraction |
 | Free Tier | The default account plan; includes roadmap extraction from syllabus with upload limits; no payment required |
 | Pro Tier | The paid subscription plan; unlocks AI topic extraction from notes/slides and higher upload limits |
-| Platform API Key | The LLM API key owned and managed by AcadTrack; shared across all users; its cost is recovered through Pro subscriptions |
+| Platform API Key | The LLM API key owned and managed by Koala; shared across all users; its cost is recovered through Pro subscriptions |
 | Roadmap Node | A single extracted or manually created item on a course roadmap — an assignment, quiz, exam, project, or lab |
 | Placeholder Node | A roadmap node whose details (date, weight, topic) are not yet known and must be filled in later |
 | Topic | A single unit of course content extracted from instructor notes/slides, tracked as done/not-done |
@@ -105,7 +105,7 @@ Out of scope for v2.2: LMS integration, real-time multi-user collaboration, auto
 
 ## **2.1 System Architecture**
 
-AcadTrack v2.2 follows a three-tier architecture with an added AI extraction service, subscription gating, and two client types:
+Koala v2.2 follows a three-tier architecture with an added AI extraction service, subscription gating, and two client types:
 
 - **Web Frontend**: HTML, CSS, and JavaScript, communicating with the backend via REST API. Owns document upload, extraction review/confirmation, the notes graph view, retrospectives, and subscription/billing management.
 - **Mobile Frontend**: Consumes the same REST API. Owns daily logging, topic check-offs, quick note capture, self-assessment prompts, and push notifications.
@@ -317,7 +317,7 @@ The core differentiating feature of v2.2. Available on the **Free tier**; roadma
 
 ## **FR-13: GPA Calculator**
 
-A built-in GPA tool that works both as a **standalone calculator** (independent of any other AcadTrack data) and as an **integrated feature** (reading grades from roadmap nodes, linking to GPA goals, and feeding the retrospective report). All calculation logic runs client-side (no server round-trip needed); persistence of grade entries uses the backend.
+A built-in GPA tool that works both as a **standalone calculator** (independent of any other Koala data) and as an **integrated feature** (reading grades from roadmap nodes, linking to GPA goals, and feeding the retrospective report). All calculation logic runs client-side (no server round-trip needed); persistence of grade entries uses the backend.
 
 ### **FR-13-A: Per-Course Grade Entry**
 
@@ -362,7 +362,7 @@ A built-in GPA tool that works both as a **standalone calculator** (independent 
 
 | **ID** | **Priority** | **Requirement** | **Rationale** |
 | --- | --- | --- | --- |
-| FR-13-20 | Must Have | A dedicated "Standalone" tab allows entry of arbitrary course names, credits, and grades without linking to any AcadTrack course or semester | Users who just want a quick GPA check without setting up a full semester |
+| FR-13-20 | Must Have | A dedicated "Standalone" tab allows entry of arbitrary course names, credits, and grades without linking to any Koala course or semester | Users who just want a quick GPA check without setting up a full semester |
 | FR-13-21 | Must Have | Standalone calculator output (GPA, letter grade, quality points) is computed entirely client-side with no data persisted | Privacy; no unintended record creation |
 | FR-13-22 | Should Have | Standalone mode shows a grade-scale reference table (A → 4.0, B+ → 3.3, etc.) for the selected scale | Reduces lookups |
 
@@ -732,7 +732,7 @@ No extracted field — roadmap node or topic — is treated as authoritative unt
 ## **7.3 Cost, Privacy & Tier Model**
 
 ### Platform API Key Architecture
-- **AcadTrack manages a single LLM API key** (recommended: Gemini API for cost-efficiency). All extraction calls are made server-side using this key — users never see, provide, or manage any AI credentials.
+- **Koala manages a single LLM API key** (recommended: Gemini API for cost-efficiency). All extraction calls are made server-side using this key — users never see, provide, or manage any AI credentials.
 - **Free tier inference cost** is subsidised by the platform. Roadmap extraction from a typical syllabus costs ~$0.001–$0.003 per call (Gemini Flash pricing). With upload limits of 3 docs/course, worst-case cost per free user per semester is very small (~$0.01–0.03).
 - **Pro tier inference cost** covers heavier topic extraction from slides/notes (more tokens, more calls). Pro subscription revenue is designed to cover this: even at $3–5/mo per Pro user with ~10 extraction calls/semester, the margin is comfortable.
 
@@ -763,7 +763,7 @@ No extracted field — roadmap node or topic — is treated as authoritative unt
 ## **8.1 Backend (Flask)**
 
 ```
-acadtrack-backend/
+Koala-backend/
 ├── app/
 │   ├── __init__.py            # App factory, register blueprints
 │   ├── models/                # SQLAlchemy models
@@ -784,7 +784,7 @@ acadtrack-backend/
 ## **8.2 Web Frontend**
 
 ```
-acadtrack-web/
+Koala-web/
 ├── index.html          # Dashboard
 ├── login.html
 ├── courses.html
@@ -806,7 +806,7 @@ acadtrack-web/
 ## **8.3 Mobile App**
 
 ```
-acadtrack-mobile/
+Koala-mobile/
 ├── screens/
 │   ├── Dashboard
 │   ├── TopicChecklist
@@ -878,7 +878,7 @@ acadtrack-mobile/
 | Note-Density Correlation | A profile insight comparing how much a student wrote/linked notes on a topic or node against their self-rated quality or grade for it. |
 | Free Tier | Default account plan: roadmap extraction from syllabus included; up to 3 doc uploads per course per semester; no payment needed. |
 | Pro Tier | Paid subscription plan: adds AI topic extraction from notes/slides, up to 20 doc uploads per course, priority queue. |
-| Platform API Key | The LLM API key owned and managed by AcadTrack used for all extraction calls; its cost is recovered via Pro subscriptions. |
+| Platform API Key | The LLM API key owned and managed by Koala used for all extraction calls; its cost is recovered via Pro subscriptions. |
 | Upload Limit | Max documents a user may upload per course per semester, enforced by their plan tier (3 = Free, 20 = Pro). |
 | Confidence Gap | The difference between confidence rated at node creation and quality self-rated at submission. |
 | Hours Gap | The difference between estimated and actual hours logged on a roadmap node. |
@@ -892,8 +892,8 @@ acadtrack-mobile/
 | Credit Hours | The unit-weight of a course reflecting instructional contact hours per week. |
 | What-If Scenario | A GPA simulation: either computing the minimum grade needed in a remaining course to hit a target GPA, or predicting the resulting GPA given an assumed grade. |
 | GPA Goal | A goal (FR-08 type) flagged with a target GPA value, displayed with a live tracking status in the GPA Calculator. |
-| Standalone Calculator | A GPA calculator mode operating entirely on user-typed inputs with no link to any AcadTrack course or semester; results are never persisted. |
+| Standalone Calculator | A GPA calculator mode operating entirely on user-typed inputs with no link to any Koala course or semester; results are never persisted. |
 
-_AcadTrack SRS v2.2 — End of Document_
+_Koala SRS v2.2 — End of Document_
 
 _This document supersedes v2.1 (GPA Calculator) and v2.0. It should be reviewed at the start of each development phase._
