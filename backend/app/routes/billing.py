@@ -1,6 +1,6 @@
 import hmac
 import hashlib
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from datetime import datetime
@@ -41,7 +41,7 @@ async def lemonsqueezy_webhook(request: Request, db: AsyncSession = Depends(get_
     
     # Extract subscription details
     attributes = data.get("data", {}).get("attributes", {})
-    customer_id = str(attributes.get("customer_id"))
+    _customer_id = str(attributes.get("customer_id"))
     user_email = attributes.get("user_email")
     provider_sub_id = str(data.get("data", {}).get("id"))
     sub_status = attributes.get("status")

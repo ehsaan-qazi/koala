@@ -1,7 +1,7 @@
 """StreakDailyLog model — heatmap data for daily activity."""
 
-from datetime import datetime, date
-from sqlalchemy import Integer, Date, DateTime, ForeignKey, Index, UniqueConstraint, func
+from datetime import date
+from sqlalchemy import Integer, Date, ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
