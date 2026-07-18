@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
 import CoursePage from './pages/CoursePage'
+import Layout from './components/Layout'
 import './styles/index.css'
 
 // Protected Route Wrapper
@@ -35,32 +36,11 @@ function AppRoutes() {
         element={session ? <Navigate to="/" replace /> : <LoginPage />} 
       />
       
-      <Route 
-        path="/" 
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        } 
-      />
-      
-      <Route 
-        path="/courses/:id" 
-        element={
-          <ProtectedRoute>
-            <CoursePage />
-          </ProtectedRoute>
-        } 
-      />
-      
-      <Route 
-        path="/settings" 
-        element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        } 
-      />
+      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/courses/:id" element={<CoursePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Route>
     </Routes>
   )
 }

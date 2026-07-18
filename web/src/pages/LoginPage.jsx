@@ -1,115 +1,133 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import '../styles/login.css';
 
 export default function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const { loginWithGoogle, loginWithEmail, registerWithEmail } = useAuth()
-  const navigate = useNavigate()
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      if (isLogin) {
-        await loginWithEmail(email, password)
-      } else {
-        await registerWithEmail(email, password, fullName)
-      }
-      navigate('/')
-    } catch (err) {
-      setError(err.message || 'An error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [activeTab, setActiveTab] = useState('login');
+  const { loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
 
   const handleGoogle = async () => {
-    setError('')
     try {
-      await loginWithGoogle()
-      // Note: Google login redirects, so navigate doesn't matter here
+      await loginWithGoogle();
     } catch (err) {
-      setError(err.message || 'Google login failed')
+      setError(err.message || 'Google login failed');
     }
-  }
+  };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <div className="brand">
-          <div className="brand-logo">📚</div>
-          <h2>Koala</h2>
+    <div className="login-page-wrapper" style={{ display: 'flex', minHeight: '100vh', width: '100%', alignItems: 'stretch' }}>
+      <div className="left-panel">
+<div className="orb orb-1"></div>
+<div className="orb orb-2"></div>
+<div className="brand">
+<div className="brand-icon">📚</div>
+<span className="brand-name">Koala</span>
+</div>
+<div className="hero-content">
+<div className="hero-tag">✨ v2.0 — AI-Assisted</div>
+<h1 className="hero-title">Your semester,<br/><span>fully mapped.</span></h1>
+<p className="hero-desc">Upload your syllabus. AI builds your roadmap. Track every topic, note, and deadline — all in one living picture of how you actually learn.</p>
+<div className="feature-list">
+<div className="feature-item">
+<div className="icon">🤖</div>
+<span>AI extracts roadmaps from your syllabus — deadlines, weights, topics</span>
+</div>
+<div className="feature-item">
+<div className="icon">🗺️</div>
+<span>Obsidian-style notes linked to every roadmap node and topic</span>
+</div>
+<div className="feature-item">
+<div className="icon">📊</div>
+<span>Profile insights: confidence trends, planning accuracy, procrastination fingerprint</span>
+</div>
+<div className="feature-item">
+<div className="icon">🔥</div>
+<span>Streak system tied to real academic progress, not arbitrary taps</span>
+</div>
+</div>
+<div className="stats-ticker">
+<div className="stat-item">
+<div className="stat-value">8 phases</div>
+<div className="stat-label">Feature-complete roadmap</div>
+</div>
+<div className="stat-item">
+<div className="stat-value">$0</div>
+<div className="stat-label">Cost to launch</div>
+</div>
+<div className="stat-item">
+<div className="stat-value">100%</div>
+<div className="stat-label">Student-owned data</div>
+</div>
+</div>
+</div>
+</div>
+      <div className="right-panel">
+        <div className="auth-header">
+          <h2>{activeTab === 'login' ? 'Welcome back 👋' : 'Create your account'}</h2>
+          <p>{activeTab === 'login' ? 'Sign in to your Koala account to continue.' : 'Start tracking your academic journey today.'}</p>
         </div>
-        
-        <h3>{isLogin ? 'Welcome back' : 'Create an account'}</h3>
-        
-        {error && <div className="error-message">{error}</div>}
 
-        <button 
-          className="google-btn" 
-          onClick={handleGoogle}
-        >
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" />
+        <div className="auth-toggle">
+          <button 
+            className={activeTab === 'login' ? 'active' : ''} 
+            onClick={() => setActiveTab('login')}>
+            Sign In
+          </button>
+          <button 
+            className={activeTab === 'register' ? 'active' : ''} 
+            onClick={() => setActiveTab('register')}>
+            Create Account
+          </button>
+        </div>
+
+        {error && <div style={{color: '#f87171', marginBottom: '16px', fontSize: '14px'}}>{error}</div>}
+
+        <button className="google-btn" onClick={handleGoogle}>
+          <span className="google-logo"></span>
           Continue with Google
         </button>
 
-        <div className="divider">
-          <span>or continue with email</span>
-        </div>
+        <div className="divider">or continue with email</div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          {!isLogin && (
+        {activeTab === 'login' ? (
+          <div id="login-form">
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" placeholder="you@university.edu" />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input type="password" placeholder="••••••••" />
+            </div>
+            <button className="submit-btn" onClick={() => alert('Email login not implemented')}>Sign In →</button>
+            <div className="auth-footer">
+              <a href="#">Forgot your password?</a>
+            </div>
+          </div>
+        ) : (
+          <div id="register-form">
             <div className="form-group">
               <label>Full Name</label>
-              <input 
-                type="text" 
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required={!isLogin}
-              />
+              <input type="text" placeholder="Alex Johnson" />
             </div>
-          )}
-          
-          <div className="form-group">
-            <label>Email</label>
-            <input 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" placeholder="you@university.edu" />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input type="password" placeholder="Create a strong password" />
+            </div>
+            <button className="submit-btn" onClick={() => alert('Email signup not implemented')}>Create Account →</button>
+            <div className="auth-footer">
+              By signing up, you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>
+            </div>
           </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="primary-btn" disabled={loading}>
-            {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
-          </button>
-        </form>
-
-        <p className="toggle-auth">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button onClick={() => setIsLogin(!isLogin)} className="text-btn">
-            {isLogin ? 'Sign up' : 'Log in'}
-          </button>
-        </p>
+        )}
       </div>
     </div>
-  )
+  );
 }
