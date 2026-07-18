@@ -6,8 +6,6 @@ R2 is configured as an S3-compatible endpoint using the account ID.
 """
 
 import hashlib
-import io
-from typing import BinaryIO
 
 import boto3
 from botocore.config import Config as BotoConfig

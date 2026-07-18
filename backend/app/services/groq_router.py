@@ -31,8 +31,6 @@ from enum import Enum
 from groq import (
     APIStatusError,
     APITimeoutError,
-    BadRequestError,
-    AuthenticationError,
     RateLimitError,
     Groq,
 )
