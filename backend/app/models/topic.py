@@ -24,6 +24,7 @@ class Topic(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     course = relationship("Course", back_populates="topics")
+    source_document = relationship("Document", back_populates="topics")
     linked_node = relationship("RoadmapNode", back_populates="topics")
     completions = relationship("TopicCompletion", back_populates="topic", cascade="all, delete-orphan")
     notes = relationship("Note", back_populates="topic")

@@ -56,7 +56,8 @@ async def get_current_user(
             user_metadata = payload.get("user_metadata", {})
             full_name = user_metadata.get("full_name") or user_metadata.get("name")
             avatar_url = user_metadata.get("avatar_url") or user_metadata.get("picture")
-        except JWTError:
+        except JWTError as e:
+            print(f"JWT Verification Failed: {e}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired token",

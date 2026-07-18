@@ -26,9 +26,15 @@ class Settings(BaseSettings):
     lemonsqueezy_store_id: str = ""
     lemonsqueezy_variant_id: str = ""
 
-    # ── AI (Phase 2+) ────────────────────────────────────────
+    # ── Cloudflare R2 (Object Storage) ──────────────────────
+    r2_account_id: str = ""
+    r2_access_key_id: str = ""
+    r2_secret_access_key: str = ""
+    r2_bucket_name: str = "koala-uploads"
+
+    # ── AI (Groq) ─────────────────────────────────────────────
     llm_api_key: str = ""
-    llm_provider: str = "gemini"
+    llm_provider: str = "groq"
 
     # ── Tier Limits ──────────────────────────────────────────
     free_upload_limit: int = 3
@@ -47,6 +53,7 @@ class Settings(BaseSettings):
         "env_file": "../.env",
         "env_file_encoding": "utf-8",
         "case_sensitive": False,
+        "extra": "ignore",
     }
 
 

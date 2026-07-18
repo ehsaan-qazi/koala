@@ -6,6 +6,9 @@ from app.config import settings
 from app.routes.auth import router as auth_router
 from app.routes.courses import router as courses_router
 from app.routes.billing import router as billing_router
+from app.routes.documents import router as documents_router
+from app.routes.topics import router as topics_router
+from app.routes.admin import router as admin_router
 
 app = FastAPI(
     title="Koala API",
@@ -16,7 +19,7 @@ app = FastAPI(
 # Set up CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,6 +28,11 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"status": "ok", "message": "Koala API is running"}
+
+# Register all routers
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(courses_router, prefix="/api/v1")
 app.include_router(billing_router, prefix="/api/v1")
+app.include_router(documents_router, prefix="/api/v1")
+app.include_router(topics_router, prefix="/api/v1")
+app.include_router(admin_router, prefix="/api/v1")

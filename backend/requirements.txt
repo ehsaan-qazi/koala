@@ -1,7 +1,7 @@
 # ========================
 # Core
 # ========================
-fastapi==0.115.12
+fastapi[standard]==0.115.12
 uvicorn[standard]==0.34.2
 pydantic==2.11.3
 pydantic-settings==2.9.1
@@ -10,7 +10,7 @@ pydantic-settings==2.9.1
 # Database
 # ========================
 sqlalchemy[asyncio]==2.0.41
-psycopg==3.2.4
+psycopg[binary]==3.2.4
 alembic==1.16.2
 greenlet==3.2.3
 
@@ -24,6 +24,17 @@ httpx==0.28.1
 # Billing (LemonSqueezy webhook verification)
 # ========================
 # Uses stdlib hmac — no extra dep needed
+
+# ========================
+# Object Storage (Cloudflare R2 via S3 API)
+# ========================
+boto3==1.38.34
+
+# ========================
+# AI / Extraction
+# ========================
+groq==0.25.0
+PyPDF2==3.0.1
 
 # ========================
 # Utilities

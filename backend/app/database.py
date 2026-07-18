@@ -18,7 +18,7 @@ engine = create_async_engine(
     echo=settings.debug,
     pool_pre_ping=True,
     # Supabase uses pgbouncer in transaction mode — disable prepared statements
-    connect_args={"prepared_statement_cache_size": 0},
+    connect_args={"prepare_threshold": None},
 )
 
 # Session factory

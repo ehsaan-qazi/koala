@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import SettingsPage from './pages/SettingsPage'
+import CoursePage from './pages/CoursePage'
 import './styles/index.css'
 
 // Protected Route Wrapper
@@ -39,6 +40,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        } 
+      />
+      
+      <Route 
+        path="/courses/:id" 
+        element={
+          <ProtectedRoute>
+            <CoursePage />
           </ProtectedRoute>
         } 
       />
