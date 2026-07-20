@@ -17,6 +17,29 @@ export default function LoginPage() {
     }
   };
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const { loginWithEmail, registerWithEmail } = useAuth();
+
+  const handleEmailLogin = async () => {
+    try {
+      setError('');
+      await loginWithEmail(email, password);
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    }
+  };
+
+  const handleEmailRegister = async () => {
+    try {
+      setError('');
+      await registerWithEmail(email, password, fullName);
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    }
+  };
+
   return (
     <div className="login-page-wrapper" style={{ display: 'flex', minHeight: '100vh', width: '100%', alignItems: 'stretch' }}>
       <div className="left-panel">
@@ -96,13 +119,13 @@ export default function LoginPage() {
           <div id="login-form">
             <div className="form-group">
               <label>Email Address</label>
-              <input type="email" placeholder="you@university.edu" />
+              <input type="email" placeholder="you@university.edu" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
             <div className="form-group">
               <label>Password</label>
-              <input type="password" placeholder="••••••••" />
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
-            <button className="submit-btn" onClick={() => alert('Email login not implemented')}>Sign In →</button>
+            <button className="submit-btn" onClick={handleEmailLogin}>Sign In →</button>
             <div className="auth-footer">
               <a href="#">Forgot your password?</a>
             </div>
@@ -111,17 +134,17 @@ export default function LoginPage() {
           <div id="register-form">
             <div className="form-group">
               <label>Full Name</label>
-              <input type="text" placeholder="Alex Johnson" />
+              <input type="text" placeholder="Alex Johnson" value={fullName} onChange={e => setFullName(e.target.value)} />
             </div>
             <div className="form-group">
               <label>Email Address</label>
-              <input type="email" placeholder="you@university.edu" />
+              <input type="email" placeholder="you@university.edu" value={email} onChange={e => setEmail(e.target.value)} />
             </div>
             <div className="form-group">
               <label>Password</label>
-              <input type="password" placeholder="Create a strong password" />
+              <input type="password" placeholder="Create a strong password" value={password} onChange={e => setPassword(e.target.value)} />
             </div>
-            <button className="submit-btn" onClick={() => alert('Email signup not implemented')}>Create Account →</button>
+            <button className="submit-btn" onClick={handleEmailRegister}>Create Account →</button>
             <div className="auth-footer">
               By signing up, you agree to our <a href="#">Terms</a> & <a href="#">Privacy Policy</a>
             </div>

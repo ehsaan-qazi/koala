@@ -23,6 +23,8 @@ def _get_r2_client():
         config=BotoConfig(
             region_name="auto",
             signature_version="s3v4",
+            # R2 requires virtual-hosted-style addressing
+            s3={"addressing_style": "virtual"},
         ),
     )
 

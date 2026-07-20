@@ -30,19 +30,20 @@ async def list_course_topics(
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Course not found")
 
-    # Get all topics for this course
+    # Get all topics for this course (filtered by user_id for security)
     topics_result = await db.execute(
         select(Topic)
-        .where(Topic.course_id == course_id)
+        .where(Topic.course_id == course_id, Topic.user_id == current_user.id)
         .order_by(Topic.order_index)
     )
     topics = topics_result.scalars().all()
 
     # Get completions for current user
+    topic_ids = [t.id for t in topics]
     completions_result = await db.execute(
         select(TopicCompletion).where(
             TopicCompletion.user_id == current_user.id,
-            TopicCompletion.topic_id.in_([t.id for t in topics]) if topics else False,
+            TopicCompletion.topic_id.in_(topic_ids) if topic_ids else False,
         )
     )
     completions = {tc.topic_id: tc for tc in completions_result.scalars().all()} if topics else {}

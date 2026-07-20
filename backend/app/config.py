@@ -4,6 +4,7 @@ Loads settings from environment variables / .env file.
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -44,6 +45,25 @@ class Settings(BaseSettings):
 
     # ── CORS ─────────────────────────────────────────────────
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
+
+    @field_validator(
+        "supabase_url", "supabase_anon_key", "supabase_service_role_key", "supabase_jwt_secret",
+        "app_secret_key", "lemonsqueezy_api_key", "lemonsqueezy_webhook_secret",
+        "lemonsqueezy_store_id", "lemonsqueezy_variant_id",
+        "r2_account_id", "r2_access_key_id", "r2_secret_access_key", "r2_bucket_name",
+        "llm_api_key",
+        mode="after",
+    )
+    @classmethod
+    def _strip_credentials(cls, v: str) -> str:
+        """Strip stray whitespace and surrounding quotes from secret/env values.
+
+        python-dotenv preserves quotes/trailing newlines in .env files, which
+        breaks HMAC signing (e.g. R2 SignatureDoesNotMatch) and JWT verification.
+        """
+        if isinstance(v, str):
+            return v.strip().strip('"').strip("'")
+        return v
 
     @property
     def cors_origin_list(self) -> list[str]:

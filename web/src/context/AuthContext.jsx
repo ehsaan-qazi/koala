@@ -12,12 +12,14 @@ export function AuthProvider({ children }) {
 
   const fetchUserProfile = async () => {
     try {
-      // Calls our backend to get/create user profile and tier plan
       const userData = await apiFetch('/auth/me')
       setUser(userData)
     } catch (err) {
       console.error('Error fetching user profile:', err)
       setUser(null)
+    } finally {
+      // Always stop loading — even if the backend is unreachable
+      setLoading(false)
     }
   }
 
@@ -37,17 +39,11 @@ export function AuthProvider({ children }) {
       async (_event, session) => {
         setSession(session)
         if (session) {
-          // Send callback to backend to ensure DB is synced
-          try {
-            await apiFetch('/auth/callback', { method: 'POST' })
-            await fetchUserProfile()
-          } catch (err) {
-            console.error('Callback error:', err)
-          }
+          await fetchUserProfile()
         } else {
           setUser(null)
+          setLoading(false)
         }
-        setLoading(false)
       }
     )
 
@@ -105,7 +101,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }

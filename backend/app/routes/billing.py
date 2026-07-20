@@ -9,6 +9,7 @@ from app.config import settings
 from app.database import get_db
 from app.models.user import User
 from app.models.subscription import Subscription
+from app.middleware.tier_gate import get_file_size_limit_bytes
 from app.middleware.auth import get_current_user
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -125,3 +126,25 @@ async def get_checkout_url(current_user: User = Depends(get_current_user)):
         
     url = f"https://{settings.lemonsqueezy_store_id}.lemonsqueezy.com/checkout/buy/{settings.lemonsqueezy_variant_id}?checkout[email]={current_user.email}"
     return {"checkout_url": url}
+
+
+@router.get("/limits")
+async def get_tier_limits(current_user: User = Depends(get_current_user)):
+    """
+    Returns the current user's tier limits for file uploads and document counts.
+    """
+    is_pro = current_user.plan == "pro"
+    max_file_size_bytes = get_file_size_limit_bytes(current_user)
+
+    # Get upload limit by checking a dummy course or using config
+    from app.config import settings
+    upload_limit = settings.pro_upload_limit if is_pro else settings.free_upload_limit
+
+    return {
+        "plan": current_user.plan,
+        "plan_expires_at": current_user.plan_expires_at,
+        "upload_limit_per_course": upload_limit,
+        "max_file_size_mb": max_file_size_bytes // (1024 * 1024),
+        "max_file_size_bytes": max_file_size_bytes,
+        "pro_only_doc_types": ["instructor_notes", "slides"] if not is_pro else [],
+    }

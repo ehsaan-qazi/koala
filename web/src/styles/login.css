@@ -1,21 +1,5 @@
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg-base: #080810;
-      --bg-surface: #10101c;
-      --bg-elevated: #181826;
-      --border: rgba(255,255,255,0.07);
-      --purple: #7c6af7;
-      --purple-light: #a89fff;
-      --purple-glow: rgba(124,106,247,0.35);
-      --green: #34d399;
-      --text-primary: #eeeeff;
-      --text-secondary: #8888aa;
-      --text-muted: #55556e;
-      --radius-md: 12px;
-      --radius-lg: 18px;
-    }
+    /* Login page styles — inherits :root variables from index.css */
 
     .login-page-wrapper {
       font-family: 'Inter', sans-serif;

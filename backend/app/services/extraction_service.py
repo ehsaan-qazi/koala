@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 
 from PyPDF2 import PdfReader
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.concurrency import run_in_threadpool
 
 from app.models.document import Document
 from app.models.topic import Topic
@@ -132,10 +133,10 @@ async def extract_topics_for_document(
 
     try:
         # Step 1: Download PDF from R2
-        pdf_bytes = storage_service.download_file(document.r2_key)
+        pdf_bytes = await run_in_threadpool(storage_service.download_file, document.r2_key)
 
         # Step 2: Extract text
-        syllabus_text = extract_text_from_pdf(pdf_bytes)
+        syllabus_text = await run_in_threadpool(extract_text_from_pdf, pdf_bytes)
         if not syllabus_text.strip():
             document.processing_status = "failed"
             document.error_message = "Could not extract any text from the PDF"
@@ -143,7 +144,7 @@ async def extract_topics_for_document(
             return []
 
         # Step 3: Call Groq with fallback
-        topic_titles, model_used = call_groq_for_topics(syllabus_text)
+        topic_titles, model_used = await run_in_threadpool(call_groq_for_topics, syllabus_text)
         logger.info(
             "Extracted %d topics from document %d using model %s",
             len(topic_titles), document.id, model_used,

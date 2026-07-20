@@ -19,16 +19,14 @@ async def get_llm_status(current_user: User = Depends(get_current_user)) -> dict
 
     Useful for debugging rate-limit fallback behavior at runtime.
 
-    Example response:
-    {
-      "config": { "failure_threshold": 2, "cooldown_seconds": 60 },
-      "models": {
-        "llama-3.3-70b-versatile": { "state": "closed", "failure_count": 0, ... },
-        "llama-3.1-70b-specdec":   { "state": "open",   "failure_count": 2, "time_until_retry_seconds": 47 },
-        ...
-      }
-    }
+    Requires admin privileges.
     """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+
     router_instance = get_router()
     return {
         "config": {
