@@ -3,7 +3,7 @@ AI extraction service — extract topics from syllabus PDFs using Groq.
 
 Pipeline:
 1. Download PDF from R2
-2. Extract text via PyPDF2
+2. Extract text via pypdf
 3. Send to Groq via the model router (circuit-breaker fallback)
 4. Parse response into Topic objects
 5. Bulk insert into DB, linked to the source document
@@ -14,7 +14,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.concurrency import run_in_threadpool
 
@@ -122,7 +122,7 @@ async def extract_topics_for_document(
     """
     Full extraction pipeline for a single document:
       1. Download PDF from R2
-      2. Extract text via PyPDF2
+      2. Extract text via pypdf
       3. Call Groq (with circuit-breaker fallback) for topics
       4. Insert Topic rows into the DB, linked to this document
 

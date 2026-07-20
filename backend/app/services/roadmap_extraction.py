@@ -4,7 +4,7 @@ syllabus PDF using Groq.
 
 Pipeline (mirrors extraction_service.py but targets roadmap_nodes):
 1. Download PDF from R2
-2. Extract text via PyPDF2
+2. Extract text via pypdf
 3. Send to Groq via the circuit-breaker router (structured JSON output)
 4. Parse the JSON into roadmap nodes
 5. Bulk insert RoadmapNode rows linked to the source document
@@ -22,7 +22,7 @@ import json
 import logging
 from datetime import datetime, timezone
 
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.concurrency import run_in_threadpool
 
@@ -236,7 +236,7 @@ async def extract_roadmap_for_document(
     """
     Full roadmap extraction pipeline for a single document:
       1. Download PDF from R2
-      2. Extract text via PyPDF2
+      2. Extract text via pypdf
       3. Call Groq (with circuit-breaker fallback) for structured roadmap
       4. Insert RoadmapNode rows into the DB, linked to this document
 
