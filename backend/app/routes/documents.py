@@ -18,7 +18,6 @@ from app.schemas.document import DocumentResponse, DocumentListItem
 from app.services import storage_service
 from app.services.extraction_service import extract_topics_for_document
 from app.services.roadmap_extraction import extract_roadmap_for_document
-from app.config import settings
 
 logger = logging.getLogger(__name__)
 

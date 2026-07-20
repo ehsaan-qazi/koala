@@ -3,7 +3,7 @@ Admin routes — internal operational endpoints.
 Requires authentication (any authenticated user can view; you could restrict to admins later).
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.middleware.auth import get_current_user
 from app.models.user import User

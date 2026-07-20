@@ -1,8 +1,5 @@
 """Roadmap Node model — assessment items on a course roadmap."""
 
-# Allowed node types — must match the DB CHECK constraint on node_type
-ALLOWED_NODE_TYPES = {"Assignment", "Quiz", "Exam", "Project", "Lab", "Other"}
-
 from datetime import datetime
 from sqlalchemy import (
     String, Integer, Boolean, Numeric, SmallInteger, DateTime, ForeignKey, Index, func,
@@ -10,6 +7,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+# Allowed node types — must match the DB CHECK constraint on node_type
+ALLOWED_NODE_TYPES = {"Assignment", "Quiz", "Exam", "Project", "Lab", "Other"}
 
 
 class RoadmapNode(Base):
