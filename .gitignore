@@ -75,3 +75,5 @@ docker-compose.override.yml
 # ========================
 *.log
 .agents/
+audit.md
+implementation_plan.md
